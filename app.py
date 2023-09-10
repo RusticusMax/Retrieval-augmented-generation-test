@@ -6,22 +6,32 @@ from langchain.indexes import VectorstoreIndexCreator
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
+from langchain.chains import ConversationalRetrievalChain
 import os
 
 def print_dict(dict_x, depth=0):
     for key, value in dict_x.items():
         if type(value) is dict:
             print_dict(value, depth + 1)
+        elif type(value) is list:
+            for i in value:
+                print("[" + str(i) + "]")
         else:
             print("   " * depth, key + ":")
     print("-----------------------------------")
     for key, value in dict_x.items():
         if type(value) is dict:
             print_dict(value, depth + 1)
+        elif type(value) is list:
+            print("   " * depth, key + ":")
+            for i in value:
+                print("   " * depth, "[" + str(i) + "]")
+                print("$$$")
         else:
             print("   " * depth, key + ":", value)
+        print()
 
-# test_dict = { 'test1': 'value1', 'test2': {'test21': 'value21', 'test22': 'value22', 'value23': {'test221': 'value221'}}, 'test3': 'value3' }
+# test_dict = { 'test1': 'value1', 'test2': {'test21': 'value21', 'test22': 'value22', 'value23': ['test221', 'value221']}, 'test3': 'value3' }
 # print_dict(test_dict)
 # quit()
 
@@ -39,10 +49,21 @@ db = Chroma.from_documents(texts, embeddings)
 # expose this index in a retriever interface
 retriever = db.as_retriever(search_type="similarity", search_kwargs={"k":2})
 # create a chain to answer questions 
-qa = RetrievalQA.from_chain_type(
-    llm=OpenAI(), chain_type="stuff", retriever=retriever, return_source_documents=True)
+qa = ConversationalRetrievalChain.from_llm(OpenAI(), retriever)
+chat_history = []
 query = "what is the total number of AI publications?"
-result = qa({"query": query})
-retriever.get_relevant_documents(query)
+result = qa({"question": query, "chat_history": chat_history})
+
+# # create a chain to answer questions 
+# qa = RetrievalQA.from_chain_type(
+#     llm=OpenAI(), chain_type="stuff", retriever=retriever, return_source_documents=True)
+# query = "what is the total number of AI publications?"
+# result = qa({"query": query})
+# the_list = retriever.get_relevant_documents(query)
 print_dict(result)
 
+chat_history = [(query, result["answer"])]
+query = "What is this number divided by 2?"
+result = qa({"question": query, "chat_history": chat_history})
+
+print_dict(result)
