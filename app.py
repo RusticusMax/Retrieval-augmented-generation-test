@@ -10,6 +10,11 @@ from langchain.chains import ConversationalRetrievalChain
 import os
 import pickle
 
+FILE_NAME = "example.pdf"
+FILE_DIR = "materials"
+CHROMA_BASE_DIR = "chroma"
+CHROMA_DB_DIR = CHROMA_BASE_DIR + "/" + os.path.splitext(FILE_NAME)[0]
+
 def print_dict(dict_x, depth=0):
     for key, value in dict_x.items():
         if type(value) is dict:
@@ -38,20 +43,23 @@ def print_dict(dict_x, depth=0):
 
 os.environ["OPENAI_API_KEY"] = os.environ["THE_KEY"]    # set the API key
 
-loader = PyPDFLoader("materials/example.pdf")
-documents = loader.load()
-# # split the documents into chunks
-text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-texts = text_splitter.split_documents(documents)
 ## select which embeddings we want to use
 embeddings = OpenAIEmbeddings()
-# This is dumb need to get it to use the Choma index, but it still needs the embedding function, but what for?
-# pickle.dump(embeddings, open("embeddings.pkl", "wb"))
-# pickle.dump(texts, open("texts.pkl", "wb"))
-# texts = pickle.load(open("texts.pkl", "rb"))
-# embeddings = pickle.load(open("embeddings.pkl", "rb"))
-# create the vectorestore to use as the index
-db = Chroma.from_documents(texts, embeddings, persist_directory="chroma")
+if not os.path.exists(CHROMA_DB_DIR):
+    print("creating ...")
+    # No embeddings exist, create them
+    loader = PyPDFLoader(FILE_DIR + "/" + FILE_NAME)
+    documents = loader.load()
+    # split the documents into chunks
+    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+    texts = text_splitter.split_documents(documents)
+    # create the vectorestore to use as the index
+    db = Chroma.from_documents(texts, embeddings, persist_directory=CHROMA_DB_DIR)
+else:
+    print("exists ... loading")
+    # This is dumb need to get it to use the Choma index on disk.
+    db = Chroma(persist_directory=CHROMA_DB_DIR, embedding_function=embeddings)
+
 # expose this index in a retriever interface
 retriever = db.as_retriever(search_type="similarity", search_kwargs={"k":2})
 # create a chain to answer questions 
@@ -66,10 +74,15 @@ result = qa({"question": query, "chat_history": chat_history})
 # query = "what is the total number of AI publications?"
 # result = qa({"query": query})
 # the_list = retriever.get_relevant_documents(query)
-print_dict(result)
+#print_dict(result)
+print("Question: ", result["question"])
+print("Answer: ", result["answer"])
+print("")
 
 chat_history = [(query, result["answer"])]
 query = "What is this number divided by 2?"
 result = qa({"question": query, "chat_history": chat_history})
-
-print_dict(result)
+#print_dict(result)
+print("Question: ", result["question"])
+print("Answer: ", result["answer"])
+print("")
