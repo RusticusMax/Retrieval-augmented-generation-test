@@ -1,5 +1,5 @@
-
-
+chroma/
+*.pkl
 static/generated_imgs/ # generated images from the app
 static/generated_imgs/generatedplot.png
 .idea

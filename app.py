@@ -8,6 +8,7 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.chains import ConversationalRetrievalChain
 import os
+import pickle
 
 def print_dict(dict_x, depth=0):
     for key, value in dict_x.items():
@@ -39,13 +40,18 @@ os.environ["OPENAI_API_KEY"] = os.environ["THE_KEY"]    # set the API key
 
 loader = PyPDFLoader("materials/example.pdf")
 documents = loader.load()
-# split the documents into chunks
+# # split the documents into chunks
 text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
 texts = text_splitter.split_documents(documents)
-# select which embeddings we want to use
+## select which embeddings we want to use
 embeddings = OpenAIEmbeddings()
+# This is dumb need to get it to use the Choma index, but it still needs the embedding function, but what for?
+# pickle.dump(embeddings, open("embeddings.pkl", "wb"))
+# pickle.dump(texts, open("texts.pkl", "wb"))
+# texts = pickle.load(open("texts.pkl", "rb"))
+# embeddings = pickle.load(open("embeddings.pkl", "rb"))
 # create the vectorestore to use as the index
-db = Chroma.from_documents(texts, embeddings)
+db = Chroma.from_documents(texts, embeddings, persist_directory="chroma")
 # expose this index in a retriever interface
 retriever = db.as_retriever(search_type="similarity", search_kwargs={"k":2})
 # create a chain to answer questions 
