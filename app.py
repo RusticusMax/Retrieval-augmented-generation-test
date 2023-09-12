@@ -18,10 +18,10 @@ from dotenv import load_dotenv
 #util.print_dict(test_dict)
 #quit()
 
-FILE_NAME = "example.pdf"
-FILE_DIR = "materials"
-CHROMA_BASE_DIR = "chroma"
-CHROMA_DB_DIR = CHROMA_BASE_DIR + "/" + os.path.splitext(FILE_NAME)[0]
+# FILE_NAME = "example.pdf"
+FILE_DIR = "example1"
+CHROMA_DB_DIR = ".chroma"
+# CHROMA_DB_DIR = CHROMA_BASE_DIR + "/" + os.path.splitext(FILE_NAME)[0]
 
 # os.environ["OPENAI_API_KEY"] = os.environ["THE_KEY"]    # set the API key
 load_dotenv()   # LOad keys from .env file
@@ -40,7 +40,7 @@ load_dotenv()   # LOad keys from .env file
 
 ## select which embeddings we want to use
 embeddings = OpenAIEmbeddings()
-if not os.path.exists(CHROMA_DB_DIR):
+if not os.path.exists(FILE_DIR + '/' + CHROMA_DB_DIR):
     print("creating ...")
     # No embeddings exist, create them
     # loader = PyPDFLoader(FILE_DIR + "/" + FILE_NAME)
@@ -48,14 +48,15 @@ if not os.path.exists(CHROMA_DB_DIR):
     documents = loader.load()
     print("loaded documents: ", len(documents))
     # split the documents into chunks
-    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     texts = text_splitter.split_documents(documents)
     # create the vectorestore to use as the index
-    db = Chroma.from_documents(texts, embeddings, persist_directory=CHROMA_DB_DIR)
+    db = Chroma.from_documents(texts, embeddings, persist_directory=FILE_DIR + '/' + CHROMA_DB_DIR)
 else:
     print("exists ... loading")
-    # This is dumb need to get it to use the Choma index on disk.
-    db = Chroma(persist_directory=CHROMA_DB_DIR, embedding_function=embeddings)
+    # This is dumb I should be anble to tell if it loaded, and just load into the DB.
+    # Instead i test for the directory.
+    db = Chroma(persist_directory=FILE_DIR + '/' + CHROMA_DB_DIR, embedding_function=embeddings)
 
 # expose this index in a retriever interface
 retriever = db.as_retriever(search_type="similarity", search_kwargs={"k":2})
