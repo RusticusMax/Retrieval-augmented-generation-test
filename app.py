@@ -13,6 +13,7 @@ import pickle
 import streamlit as st
 import util
 from dotenv import load_dotenv
+import openai
 
 #test_dict = { 'test1': 'value1', 'test2': {'test21': 'value21', 'test22': 'value22', 'value23': ['test221', 'value221']}, 'test3': 'value3' }
 #util.print_dict(test_dict)
@@ -32,15 +33,10 @@ load_dotenv()   # LOad keys from .env file
 # print("doc_name: ", st.session_state.doc_name)
 # FILE_NAME = st.session_state.doc_name
 
-
-# quit()
-# test_dict = { 'test1': 'value1', 'test2': {'test21': 'value21', 'test22': 'value22', 'value23': ['test221', 'value221']}, 'test3': 'value3' }
-# util.print_dict(test_dict)
-# quit()
-
+openai.api_key = os.environ["OPENAI_API_KEY"]    # set the API key
 ## select which embeddings we want to use
 embeddings = OpenAIEmbeddings()
-if not os.path.exists(FILE_DIR + '/' + CHROMA_DB_DIR):
+if True or not os.path.exists(FILE_DIR + '/' + CHROMA_DB_DIR):
     print("creating ...")
     # No embeddings exist, create them
     # loader = PyPDFLoader(FILE_DIR + "/" + FILE_NAME)
@@ -48,7 +44,7 @@ if not os.path.exists(FILE_DIR + '/' + CHROMA_DB_DIR):
     documents = loader.load()
     print("loaded documents: ", len(documents))
     # split the documents into chunks
-    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
     texts = text_splitter.split_documents(documents)
     # create the vectorestore to use as the index
     db = Chroma.from_documents(texts, embeddings, persist_directory=FILE_DIR + '/' + CHROMA_DB_DIR)
@@ -84,3 +80,4 @@ result = qa({"question": query, "chat_history": chat_history})
 print("Question: ", result["question"])
 print("Answer: ", result["answer"])
 print("")
+print("chat_history: ", chat_history)
