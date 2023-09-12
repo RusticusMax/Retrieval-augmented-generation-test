@@ -1,0 +1,2 @@
+this is just junk to test the directory load acrosss multipule file types
+PDF, TEXT, CSV, etc

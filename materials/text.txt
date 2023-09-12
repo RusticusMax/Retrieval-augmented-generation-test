@@ -1,0 +1,2 @@
+Just a junk file to test the DirectoryLoad of multiple file types
+PDF, CSV, TEXT, etc

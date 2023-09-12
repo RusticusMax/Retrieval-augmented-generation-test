@@ -2,6 +2,7 @@ from langchain.chains import RetrievalQA
 from langchain.llms import OpenAI
 from langchain.document_loaders import TextLoader
 from langchain.document_loaders import PyPDFLoader
+from langchain.document_loaders import DirectoryLoader
 from langchain.indexes import VectorstoreIndexCreator
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings
@@ -11,6 +12,7 @@ import os
 import pickle
 import streamlit as st
 import util
+from dotenv import load_dotenv
 
 #test_dict = { 'test1': 'value1', 'test2': {'test21': 'value21', 'test22': 'value22', 'value23': ['test221', 'value221']}, 'test3': 'value3' }
 #util.print_dict(test_dict)
@@ -21,7 +23,8 @@ FILE_DIR = "materials"
 CHROMA_BASE_DIR = "chroma"
 CHROMA_DB_DIR = CHROMA_BASE_DIR + "/" + os.path.splitext(FILE_NAME)[0]
 
-os.environ["OPENAI_API_KEY"] = os.environ["THE_KEY"]    # set the API key
+# os.environ["OPENAI_API_KEY"] = os.environ["THE_KEY"]    # set the API key
+load_dotenv()   # LOad keys from .env file
 
 #st.set_page_config(page_title=' 🤖Doc Intigotator', layout='wide')
 # st.write("Enter your question below and the AI will answer it.  You can also ask follow up questions.  The AI will remember the context of the conversation.")
@@ -37,11 +40,13 @@ os.environ["OPENAI_API_KEY"] = os.environ["THE_KEY"]    # set the API key
 
 ## select which embeddings we want to use
 embeddings = OpenAIEmbeddings()
-if not os.path.exists(CHROMA_DB_DIR):
+if True or not os.path.exists(CHROMA_DB_DIR):
     print("creating ...")
     # No embeddings exist, create them
-    loader = PyPDFLoader(FILE_DIR + "/" + FILE_NAME)
+    # loader = PyPDFLoader(FILE_DIR + "/" + FILE_NAME)
+    loader = DirectoryLoader(FILE_DIR)
     documents = loader.load()
+    print("loaded documents: ", len(documents))
     # split the documents into chunks
     text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
     texts = text_splitter.split_documents(documents)
