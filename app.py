@@ -40,7 +40,7 @@ load_dotenv()   # LOad keys from .env file
 
 ## select which embeddings we want to use
 embeddings = OpenAIEmbeddings()
-if True or not os.path.exists(CHROMA_DB_DIR):
+if not os.path.exists(CHROMA_DB_DIR):
     print("creating ...")
     # No embeddings exist, create them
     # loader = PyPDFLoader(FILE_DIR + "/" + FILE_NAME)
