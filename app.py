@@ -9,39 +9,31 @@ from langchain.vectorstores import Chroma
 from langchain.chains import ConversationalRetrievalChain
 import os
 import pickle
+import streamlit as st
+import util
+
+#test_dict = { 'test1': 'value1', 'test2': {'test21': 'value21', 'test22': 'value22', 'value23': ['test221', 'value221']}, 'test3': 'value3' }
+#util.print_dict(test_dict)
+#quit()
 
 FILE_NAME = "example.pdf"
 FILE_DIR = "materials"
 CHROMA_BASE_DIR = "chroma"
 CHROMA_DB_DIR = CHROMA_BASE_DIR + "/" + os.path.splitext(FILE_NAME)[0]
 
-def print_dict(dict_x, depth=0):
-    for key, value in dict_x.items():
-        if type(value) is dict:
-            print_dict(value, depth + 1)
-        elif type(value) is list:
-            for i in value:
-                print("[" + str(i) + "]")
-        else:
-            print("   " * depth, key + ":")
-    print("-----------------------------------")
-    for key, value in dict_x.items():
-        if type(value) is dict:
-            print_dict(value, depth + 1)
-        elif type(value) is list:
-            print("   " * depth, key + ":")
-            for i in value:
-                print("   " * depth, "[" + str(i) + "]")
-                print("$$$")
-        else:
-            print("   " * depth, key + ":", value)
-        print()
-
-# test_dict = { 'test1': 'value1', 'test2': {'test21': 'value21', 'test22': 'value22', 'value23': ['test221', 'value221']}, 'test3': 'value3' }
-# print_dict(test_dict)
-# quit()
-
 os.environ["OPENAI_API_KEY"] = os.environ["THE_KEY"]    # set the API key
+
+#st.set_page_config(page_title=' 🤖Doc Intigotator', layout='wide')
+# st.write("Enter your question below and the AI will answer it.  You can also ask follow up questions.  The AI will remember the context of the conversation.")
+# st.text_input("doc name", key="doc_name")
+# print("doc_name: ", st.session_state.doc_name)
+# FILE_NAME = st.session_state.doc_name
+
+
+# quit()
+# test_dict = { 'test1': 'value1', 'test2': {'test21': 'value21', 'test22': 'value22', 'value23': ['test221', 'value221']}, 'test3': 'value3' }
+# util.print_dict(test_dict)
+# quit()
 
 ## select which embeddings we want to use
 embeddings = OpenAIEmbeddings()
