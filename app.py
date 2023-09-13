@@ -4,13 +4,13 @@ from langchain.chat_models import ChatOpenAI
 from langchain.document_loaders import TextLoader
 from langchain.document_loaders import PyPDFLoader
 from langchain.document_loaders import DirectoryLoader
+from langchain.document_loaders.url import UnstructuredURLLoader
 from langchain.indexes import VectorstoreIndexCreator
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.chains import ConversationalRetrievalChain
 import os
-import pickle
 import streamlit as st
 import util
 from dotenv import load_dotenv
@@ -43,6 +43,8 @@ if not os.path.exists(FILE_DIR + '/' + CHROMA_DB_DIR):
     # loader = PyPDFLoader(FILE_DIR + "/" + FILE_NAME)
     loader = DirectoryLoader(FILE_DIR)
     documents = loader.load()
+    # loader = UnstructuredURLLoader(["https://arxiv.org/pdf/2106.06130.pdf"])
+    # documents.append(loader.load())
     print("loaded documents: ", len(documents))
     # split the documents into chunks
     text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
