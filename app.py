@@ -1,5 +1,6 @@
 from langchain.chains import RetrievalQA
 from langchain.llms import OpenAI
+from langchain.chat_models import ChatOpenAI
 from langchain.document_loaders import TextLoader
 from langchain.document_loaders import PyPDFLoader
 from langchain.document_loaders import DirectoryLoader
@@ -36,7 +37,7 @@ load_dotenv()   # LOad keys from .env file
 openai.api_key = os.environ["OPENAI_API_KEY"]    # set the API key
 ## select which embeddings we want to use
 embeddings = OpenAIEmbeddings()
-if True or not os.path.exists(FILE_DIR + '/' + CHROMA_DB_DIR):
+if not os.path.exists(FILE_DIR + '/' + CHROMA_DB_DIR):
     print("creating ...")
     # No embeddings exist, create them
     # loader = PyPDFLoader(FILE_DIR + "/" + FILE_NAME)
@@ -57,7 +58,9 @@ else:
 # expose this index in a retriever interface
 retriever = db.as_retriever(search_type="similarity", search_kwargs={"k":2})
 # create a chain to answer questions 
-qa = ConversationalRetrievalChain.from_llm(OpenAI(), retriever)
+# useful info
+# https://stackoverflow.com/questions/75774873/openai-chatgpt-gpt-3-5-api-error-this-is-a-chat-model-and-not-supported-in-t
+qa = ConversationalRetrievalChain.from_llm(llm=ChatOpenAI(model='gpt-4-0613'), retriever=retriever)
 chat_history = []
 query = "what is the total number of AI publications?"
 result = qa({"question": query, "chat_history": chat_history})
@@ -76,8 +79,7 @@ print("")
 chat_history = [(query, result["answer"])]
 query = "What is this number divided by 2?"
 result = qa({"question": query, "chat_history": chat_history})
-#print_dict(result)
 print("Question: ", result["question"])
 print("Answer: ", result["answer"])
-print("")
 print("chat_history: ", chat_history)
+print("------------------")
