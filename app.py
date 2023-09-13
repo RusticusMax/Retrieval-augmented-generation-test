@@ -34,7 +34,7 @@ load_dotenv()   # LOad keys from .env file
 # print("doc_name: ", st.session_state.doc_name)
 # FILE_NAME = st.session_state.doc_name
 
-openai.api_key = os.environ["OPENAI_API_KEY"]    # set the API key
+# openai.api_key = os.environ["OPENAI_API_KEY"]    # set the API key
 ## select which embeddings we want to use
 embeddings = OpenAIEmbeddings()
 if not os.path.exists(FILE_DIR + '/' + CHROMA_DB_DIR):
