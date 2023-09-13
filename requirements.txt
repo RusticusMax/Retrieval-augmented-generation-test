@@ -1,2 +1,3 @@
 langchain==0.0.285
 unstructured==0.10.14
+python-dotenv==1.0.0
