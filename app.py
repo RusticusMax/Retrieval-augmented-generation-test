@@ -10,14 +10,8 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.chains import ConversationalRetrievalChain
-#import os
-#import streamlit as st
-#import util
+import util
 from dotenv import load_dotenv
-
-#test_dict = { 'test1': 'value1', 'test2': {'test21': 'value21', 'test22': 'value22', 'value23': ['test221', 'value221']}, 'test3': 'value3' }
-#util.print_dict(test_dict)
-#quit()
 
 # FILE_NAME = "example.pdf"
 FILE_DIR = "example1"
