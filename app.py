@@ -1,20 +1,19 @@
-from langchain.chains import RetrievalQA
-from langchain.llms import OpenAI
+#from langchain.chains import RetrievalQA
+#from langchain.llms import OpenAI
 from langchain.chat_models import ChatOpenAI
-from langchain.document_loaders import TextLoader
-from langchain.document_loaders import PyPDFLoader
+#from langchain.document_loaders import TextLoader
+#from langchain.document_loaders import PyPDFLoader
 from langchain.document_loaders import DirectoryLoader
 from langchain.document_loaders.url import UnstructuredURLLoader
-from langchain.indexes import VectorstoreIndexCreator
+#from langchain.indexes import VectorstoreIndexCreator
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.chains import ConversationalRetrievalChain
-import os
-import streamlit as st
-import util
+#import os
+#import streamlit as st
+#import util
 from dotenv import load_dotenv
-import openai
 
 #test_dict = { 'test1': 'value1', 'test2': {'test21': 'value21', 'test22': 'value22', 'value23': ['test221', 'value221']}, 'test3': 'value3' }
 #util.print_dict(test_dict)
@@ -37,25 +36,27 @@ load_dotenv()   # LOad keys from .env file
 # openai.api_key = os.environ["OPENAI_API_KEY"]    # set the API key
 ## select which embeddings we want to use
 embeddings = OpenAIEmbeddings()
-if not os.path.exists(FILE_DIR + '/' + CHROMA_DB_DIR):
-    print("creating ...")
-    # No embeddings exist, create them
-    # loader = PyPDFLoader(FILE_DIR + "/" + FILE_NAME)
+
+db = Chroma(persist_directory=FILE_DIR + '/' + CHROMA_DB_DIR, embedding_function=embeddings)
+print("Number of existing vector DB elements", db._collection.count())
+
+# Is there a better way to check if the DB loaded?
+if db._collection.count() < 1: # or not (os.path.exists(FILE_DIR + '/' + CHROMA_DB_DIR)):
+    print("creating vector DB ...")
+    # load the documents
     loader = DirectoryLoader(FILE_DIR)
     documents = loader.load()
+    # Load from any URLs
     # loader = UnstructuredURLLoader(["https://arxiv.org/pdf/2106.06130.pdf"])
     # documents.append(loader.load())
     print("loaded documents: ", len(documents))
     # split the documents into chunks
     text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
     texts = text_splitter.split_documents(documents)
+    print("split documents into: ", len(texts))
     # create the vectorestore to use as the index
-    db = Chroma.from_documents(texts, embeddings, persist_directory=FILE_DIR + '/' + CHROMA_DB_DIR)
-else:
-    print("exists ... loading")
-    # This is dumb I should be anble to tell if it loaded, and just load into the DB.
-    # Instead i test for the directory.
-    db = Chroma(persist_directory=FILE_DIR + '/' + CHROMA_DB_DIR, embedding_function=embeddings)
+    db.from_documents(texts, embeddings, persist_directory=FILE_DIR + '/' + CHROMA_DB_DIR)
+    print("Number of created vector DB elements", db._collection.count())
 
 # expose this index in a retriever interface
 retriever = db.as_retriever(search_type="similarity", search_kwargs={"k":2})
