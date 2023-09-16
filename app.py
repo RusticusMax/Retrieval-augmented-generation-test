@@ -8,10 +8,16 @@ from langchain.document_loaders.url import UnstructuredURLLoader
 #from langchain.indexes import VectorstoreIndexCreator
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings
+from langchain.embeddings import HuggingFaceBgeEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.chains import ConversationalRetrievalChain
 import util
 from dotenv import load_dotenv
+import torch
+
+print("Torch version:",torch.__version__)
+
+print("Is CUDA enabled?",torch.cuda.is_available())
 
 # FILE_NAME = "example.pdf"
 FILE_DIR = "example1"
@@ -29,7 +35,11 @@ load_dotenv()   # LOad keys from .env file
 
 # openai.api_key = os.environ["OPENAI_API_KEY"]    # set the API key
 ## select which embeddings we want to use
-embeddings = OpenAIEmbeddings()
+#embeddings = OpenAIEmbeddings()
+model_name = "BAAI/bge-base-en"
+encode_kwargs = {"normalize_embeddings": True}
+
+embeddings = HuggingFaceBgeEmbeddings(model_name=model_name, model_kwargs={'device': 'cuda'}, encode_kwargs=encode_kwargs)
 
 db = Chroma(persist_directory=FILE_DIR + '/' + CHROMA_DB_DIR, embedding_function=embeddings)
 print("Number of existing vector DB elements", db._collection.count())
@@ -64,7 +74,7 @@ result = qa({"question": query, "chat_history": chat_history})
 
 # # create a chain to answer questions 
 # qa = RetrievalQA.from_chain_type(
-#     llm=OpenAI(), chain_type="stuff", retriever=retriever, return_source_documents=True)
+#     llm=OpenAI(), chain_type="stuff", retriever=retriever, return_source_documents=pipTrue)
 # query = "what is the total number of AI publications?"
 # result = qa({"query": query})
 # the_list = retriever.get_relevant_documents(query)
