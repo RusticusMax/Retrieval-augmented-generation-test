@@ -11,3 +11,7 @@ llm/chat model end point.  e.g.:
 Each end point only supports certain models.  e.g:
     /v1/chat/completion supports GPT-4, GPT-3.5
     /v1/completion supports GPT-3, GPT base
+
+NOTE: To get pytorch to work with CUDA (12.2) had to use the following
+pip install torch==2.0.1+cu118 -f https://download.pytorch.org/whl/torch_stable.html
+
