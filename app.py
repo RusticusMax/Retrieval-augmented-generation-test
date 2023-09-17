@@ -13,10 +13,10 @@ from langchain.vectorstores import Chroma
 from langchain.chains import ConversationalRetrievalChain
 import util
 from dotenv import load_dotenv
+# pip install torch==2.0.1+cu118 -f https://download.pytorch.org/whl/torch_stable.html
 import torch
 
 print("Torch version:",torch.__version__)
-
 print("Is CUDA enabled?",torch.cuda.is_available())
 
 # FILE_NAME = "example.pdf"
@@ -34,18 +34,27 @@ load_dotenv()   # LOad keys from .env file
 # FILE_NAME = st.session_state.doc_name
 
 # openai.api_key = os.environ["OPENAI_API_KEY"]    # set the API key
-## select which embeddings we want to use
-#embeddings = OpenAIEmbeddings()
-model_name = "BAAI/bge-base-en"
-encode_kwargs = {"normalize_embeddings": True}
 
-embeddings = HuggingFaceBgeEmbeddings(model_name=model_name, model_kwargs={'device': 'cuda'}, encode_kwargs=encode_kwargs)
+## select which embeddings we want to use
+# https://huggingface.co/spaces/mteb/leaderboard
+EMBED_WITH = "OpenAI"  # "OpenAI"  # "HuggingFace"
+
+if EMBED_WITH == "OpenAI":
+    embeddings = OpenAIEmbeddings()
+    model_name = "'text-embedding-ada-002'"
+    encode_kwargs = {"normalize_embeddings": True}
+elif EMBED_WITH == "HuggingFace":
+    model_name = "BAAI/bge-base-en"
+    encode_kwargs = {"normalize_embeddings": True}
+    embeddings = HuggingFaceBgeEmbeddings(model_name=model_name, model_kwargs={'device': 'cuda'}, encode_kwargs=encode_kwargs)
+
 
 db = Chroma(persist_directory=FILE_DIR + '/' + CHROMA_DB_DIR, embedding_function=embeddings)
 print("Number of existing vector DB elements", db._collection.count())
 
 # Is there a better way to check if the DB loaded?
-if db._collection.count() < 1: # or not (os.path.exists(FILE_DIR + '/' + CHROMA_DB_DIR)):
+# Need to find a way to reembedd if using an new embedding model (old DB has old embeddings)
+if True: #  or db._collection.count() < 1: # or not (os.path.exists(FILE_DIR + '/' + CHROMA_DB_DIR)):
     print("creating vector DB ...")
     # load the documents
     loader = DirectoryLoader(FILE_DIR)
@@ -59,8 +68,9 @@ if db._collection.count() < 1: # or not (os.path.exists(FILE_DIR + '/' + CHROMA_
     texts = text_splitter.split_documents(documents)
     print("split documents into: ", len(texts))
     # create the vectorestore to use as the index
-    db.from_documents(texts, embeddings, persist_directory=FILE_DIR + '/' + CHROMA_DB_DIR)
-    print("Number of created vector DB elements", db._collection.count())
+    # db.from_documents(texts, embeddings, persist_directory=FILE_DIR + '/' + CHROMA_DB_DIR)
+    db = Chroma.from_documents(texts, embeddings, persist_directory=FILE_DIR + '/' + CHROMA_DB_DIR)
+    # print("Number of created vector DB elements", db._collection.count())
 
 # expose this index in a retriever interface
 retriever = db.as_retriever(search_type="similarity", search_kwargs={"k":2})
@@ -78,7 +88,7 @@ result = qa({"question": query, "chat_history": chat_history})
 # query = "what is the total number of AI publications?"
 # result = qa({"query": query})
 # the_list = retriever.get_relevant_documents(query)
-#print_dict(result)
+# util.print_dict(result)
 print("Question: ", result["question"])
 print("Answer: ", result["answer"])
 print("")
@@ -90,3 +100,4 @@ print("Question: ", result["question"])
 print("Answer: ", result["answer"])
 print("chat_history: ", chat_history)
 print("------------------")
+# util.print_dict(result)
